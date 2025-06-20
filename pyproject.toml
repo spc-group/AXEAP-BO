@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "axeap_bo"
+version = "0.0.1"
+requires-python = ">= 3.12"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "scikit-optimize",
+    "pandas"
+]
+authors = [
+    {name = "Rishabh Ranjan", email="ranjan@anl.gov"}
+]
+description = "KB spectra analysis using Bayesian optimization"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
