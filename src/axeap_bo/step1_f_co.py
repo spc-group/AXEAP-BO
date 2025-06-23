@@ -10,7 +10,7 @@ import pandas as pd
 
 # Function to generate sticks 
 
-def gen_sticks(fdd=69.9, fpd=35.2, gpd=60.0, sov=79.6, tdq=0.0, sp=6486.2, detnum=30):
+def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq=0.0, dt=0.0, dq=0.0, m=0.0, sp=6486.2, detnum=30):
     ### Pre-set for parameters
 
     # Represents atomic number according to cowan/Resources/configurations.txt
@@ -19,7 +19,7 @@ def gen_sticks(fdd=69.9, fpd=35.2, gpd=60.0, sov=79.6, tdq=0.0, sp=6486.2, detnu
     End_E = 7700 # Ending energy 
 
     File1 = f"py_Mn2_gpd_{gpd}_tdq_{tdq}" # TO-DO: Should change to be more descriptive
-    AP = np.array([fdd, fpd, gpd, 100, sov]) # Fdd, Fpd, Gpd, SO-Core, SO-Valence
+    AP = np.array([fdd, fpd, gpd, soc, sov]) # Fdd, Fpd, Gpd, SO-Core, SO-Valence
     G1 = 1.0 # Represents width of first Gaussian
     L1 = 1.2 # Represents width of first Lorentzian
     L2 = 4.0 # Represents width of second Lorentzian at splitting point
