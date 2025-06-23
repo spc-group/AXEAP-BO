@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import AXEAP
+import axeap_bo.cowan_config as cowan_config
 import shutil
 from datetime import datetime
 import glob
@@ -31,7 +31,7 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq=0.0, d
     RunFileLocation = 'C:\cowan'
     config_path = os.path.join( RunFileLocation,'Resources','Configurations.txt')
     ### Parameters preparation
-    config_data = AXEAP.ConfigMaker(config_path) # Returns modification of configuration data
+    config_data = cowan_config.ConfigMaker(config_path) # Returns modification of configuration data
     curr_config = config_data[DetNum1][:] # Grabs the config associated with the desired atom
     atom_number = int(curr_config[1]) # Translate to desired atomic number 
     config = curr_config[0] 
@@ -45,7 +45,7 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq=0.0, d
     # ---------------------
     # Crystal Dq_g = 1, Dt_g = 2, Ds_g = 3, Dq_e = 4, Dt_e = 5, Ds_e = 6, spin_g = 7, spin_e = 8
     CTVal = np.array([tdq, 0, 0, tdq, 0, 0, 0, 0]) # First and fourth columns appear to modify 10Dq
-    crystal_bf, crystal_ct, fano = AXEAP.CFG(CTVal) 
+    crystal_bf, crystal_ct, fano = cowan_config.CFG(CTVal) 
     bindE = curr_config[4] - curr_config[8]
 
 
@@ -80,15 +80,15 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq=0.0, d
     if d_req>11:
         temp_1 = tline1[5:8] 
         temp_2 = tline1[10:13]
-        tline1 = AXEAP.changeSTR(tline1,temp_2,5)
-        tline1 = AXEAP.changeSTR(tline1,temp_1,10)
+        tline1 = cowan_config.changeSTR(tline1,temp_2,5)
+        tline1 = cowan_config.changeSTR(tline1,temp_1,10)
         temp_1 = tline2[5:8] 
         temp_2 = tline2[10:13]
-        tline2 = AXEAP.changeSTR(tline2,temp_2,5)
-        tline2 = AXEAP.changeSTR(tline2,temp_1,10)
+        tline2 = cowan_config.changeSTR(tline2,temp_2,5)
+        tline2 = cowan_config.changeSTR(tline2,temp_1,10)
     swap_SO = 0; #swapping SO coupling for F element
-    pars_ini, line11, line12 = AXEAP.update_line_slater_out(AP, f1, 0, 0, swap_SO)
-    pars_fin, line21, line22 = AXEAP.update_line_slater_out(AP, f1, 0, 1, swap_SO)
+    pars_ini, line11, line12 = cowan_config.update_line_slater_out(AP, f1, 0, 0, swap_SO)
+    pars_fin, line21, line22 = cowan_config.update_line_slater_out(AP, f1, 0, 1, swap_SO)
 
     f_out.write('%s' % tline1)
     f_out.write('%s' % tline2)
