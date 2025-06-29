@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import axeap_bo.cowan_config as cowan_config
+import cowan_config
 import shutil
 from datetime import datetime
 import glob
@@ -10,53 +10,64 @@ import pandas as pd
 
 # Function to generate sticks 
 
-def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq=0.0, dt=0.0, dq=0.0, m=0.0, sp=6486.2, detnum=30):
-    ### Pre-set for parameters
+def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0, tdq_e=0.0, dt_g=0.0, dt_e=0.0, ds_g=0.0, ds_e=0.0,
+                m_g=0.0, m_e=0.0, el="", ox="", em_start=-1, em_end=-1, sp=6486.2):
+    
+    # Collect configuration parameters
+    # ---------------------
+    ion = el+ox
 
-    # Represents atomic number according to cowan/Resources/configurations.txt
-    DetNum1 = detnum #Mn4 - changed to Mn2+
-    Start_E = 7600 # Starting energy 
-    End_E = 7700 # Ending energy 
+    # Find proper configuration
+    RunFileLocation = "C:/cowan"
+    config_path = os.path.join(RunFileLocation, "Resources", "Configurations.txt")
+    config_data = cowan_config.ConfigMaker(config_path)
+    config_els = np.array([x.decode() for x in config_data[:,0]])
+    det_ids = np.where(config_els == ion)
+    detnum = det_ids[0]
+    curr_config = np.squeeze(config_data[detnum])
 
-    File1 = f"py_Mn2_gpd_{gpd}_tdq_{tdq}" # TO-DO: Should change to be more descriptive
-    AP = np.array([fdd, fpd, gpd, soc, sov]) # Fdd, Fpd, Gpd, SO-Core, SO-Valence
-    G1 = 1.0 # Represents width of first Gaussian
-    L1 = 1.2 # Represents width of first Lorentzian
-    L2 = 4.0 # Represents width of second Lorentzian at splitting point
-    NormalizationTF = True # Not sure what this means?
-    SplitPoint = 7648.0 # Energy splitting point to determine what Lorentzian width to use
-    SplitTF = False # Whether we should split or not
-
-
-    RunFileLocation = 'C:\cowan'
-    config_path = os.path.join( RunFileLocation,'Resources','Configurations.txt')
-    ### Parameters preparation
-    config_data = cowan_config.ConfigMaker(config_path) # Returns modification of configuration data
-    curr_config = config_data[DetNum1][:] # Grabs the config associated with the desired atom
-    atom_number = int(curr_config[1]) # Translate to desired atomic number 
-    config = curr_config[0] 
-    config = config.decode() #Decode function can remove b character in front of a string.
+    # Set cowan input state
     d34 = '3D'; dGr = '0'+ str(int(curr_config[3]))
     Pel = '1S'; eGr = '01'; Pel2 = '3P'
     init_state = Pel + eGr + ' ' + d34 + dGr # Initial electronic state of atom
     final_state = Pel2 + '05' + ' ' + d34 + dGr # Final electronic state of atom
-
-    # Parameter collection of XES calculation
-    # ---------------------
-    # Crystal Dq_g = 1, Dt_g = 2, Ds_g = 3, Dq_e = 4, Dt_e = 5, Ds_e = 6, spin_g = 7, spin_e = 8
-    CTVal = np.array([tdq, 0, 0, tdq, 0, 0, 0, 0]) # First and fourth columns appear to modify 10Dq
-    crystal_bf, crystal_ct, fano = cowan_config.CFG(CTVal) 
     bindE = curr_config[4] - curr_config[8]
+    atom_number = int(curr_config[1])
 
-
-    ### writing for first ftn 10
+    # Set energy range values
+    if em_start == -1:
+        em_start = np.round(bindE-50, decimals=-1)
+    if em_end == -1:
+        em_end = np.round(bindE+50, decimals=-1)
+    
+    # Calculate crystal field parameters
+    # Indices: Dq_g = 0, Dt_g = 1, Ds_g = 2, Dq_e = 3, Dt_e = 4, Ds_e = 5, spin_g = 6, spin_e = 7
+    CTVal = np.array([tdq_g, dt_g, ds_g, tdq_e, dt_e, ds_e, m_g, m_e]) 
+    crystal_bf, crystal_ct, fano = cowan_config.CFG(CTVal) 
+    
+    # Write first ftn10 input
     val1 = -1;
     f1 = open('ftn10','w',encoding = 'utf-8')
     f1.write('22 -9    2   10  1.0    5.E-06    1.E-09-2   130   1.0  0.65  0.0 0.50 0.0  0.70 \n')
-    f1.write('%s %u %s %s %s %s %s \n' % ('  ',atom_number,'   ', config, init_state,'       ',init_state))
-    f1.write('%s %u %s %s %s %s %s \n' % ('  ',atom_number,'   ', config, final_state,'       ',final_state))
+    f1.write('%s %u %s %s %s %s %s \n' % ('  ',atom_number,'   ', ion, init_state,'       ',init_state))
+    f1.write('%s %u %s %s %s %s %s \n' % ('  ',atom_number,'   ', ion, final_state,'       ',final_state))
     f1.write('%s %d \n' % ('  ',-1))
     f1.close()
+
+
+
+
+
+    # File1 = f"py_Mn2_gpd_{gpd}_tdq_{tdq_g}" # TO-DO: Should change to be more descriptive
+    # AP = np.array([fdd, fpd, gpd, soc, sov]) # Fdd, Fpd, Gpd, SO-Core, SO-Valence
+    # G1 = 1.0 # Represents width of first Gaussian
+    # L1 = 1.2 # Represents width of first Lorentzian
+    # L2 = 4.0 # Represents width of second Lorentzian at splitting point
+    # NormalizationTF = True # Not sure what this means?
+    # SplitPoint = 7648.0 # Energy splitting point to determine what Lorentzian width to use
+    # SplitTF = False # Whether we should split or not 
+
+
 
     # Run rcn31 and rcn2 programs
     os.system(os.path.join(RunFileLocation,'bin','rcn31.exe'))
@@ -270,7 +281,7 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq=0.0, d
 
     #Force range
     fid2.write('%s' % 'energy_range ')
-    fid2.write('%3.2f %3.2f\n' % (Start_E, End_E))
+    fid2.write('%3.2f %3.2f\n' % (em_start, em_end))
 
     #Account for the temperature
     spectra = 3
