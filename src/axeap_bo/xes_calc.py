@@ -10,12 +10,14 @@ import pandas as pd
 
 # Function to generate sticks 
 
-def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0, tdq_e=0.0, dt_g=0.0, dt_e=0.0, ds_g=0.0, ds_e=0.0,
-                m_g=0.0, m_e=0.0, el="", ox="", em_start=-1, em_end=-1, sp=6486.2):
+def gen_sticks(el, ox, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0, tdq_e=0.0, dt_g=0.0, dt_e=0.0, ds_g=0.0, ds_e=0.0,
+                m_g=0.0, m_e=0.0, em_start=None, em_end=None, G1=1.0, L1=1.2, L2=None, s_pt=None, norm=False):
     
     # Collect configuration parameters
     # ---------------------
     ion = el+ox
+    AP = np.array([fdd, fpd, gpd, soc, sov])
+    fname = f"{ion}_{fdd}_{fpd}_{gpd}_{soc}_{sov}"
 
     # Find proper configuration
     RunFileLocation = "C:/cowan"
@@ -35,39 +37,29 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     atom_number = int(curr_config[1])
 
     # Set energy range values
-    if em_start == -1:
+    if not em_start:
         em_start = np.round(bindE-50, decimals=-1)
-    if em_end == -1:
+    if not em_end:
         em_end = np.round(bindE+50, decimals=-1)
+    if L2:
+        split = True
     
     # Calculate crystal field parameters
     # Indices: Dq_g = 0, Dt_g = 1, Ds_g = 2, Dq_e = 3, Dt_e = 4, Ds_e = 5, spin_g = 6, spin_e = 7
     CTVal = np.array([tdq_g, dt_g, ds_g, tdq_e, dt_e, ds_e, m_g, m_e]) 
     crystal_bf, crystal_ct, fano = cowan_config.CFG(CTVal) 
     
+    # Run rcn programs
+    # ---------------------
+
     # Write first ftn10 input
     val1 = -1;
-    f1 = open('ftn10','w',encoding = 'utf-8')
+    f1 = open('ftn10','w', encoding='utf-8')
     f1.write('22 -9    2   10  1.0    5.E-06    1.E-09-2   130   1.0  0.65  0.0 0.50 0.0  0.70 \n')
     f1.write('%s %u %s %s %s %s %s \n' % ('  ',atom_number,'   ', ion, init_state,'       ',init_state))
     f1.write('%s %u %s %s %s %s %s \n' % ('  ',atom_number,'   ', ion, final_state,'       ',final_state))
     f1.write('%s %d \n' % ('  ',-1))
     f1.close()
-
-
-
-
-
-    # File1 = f"py_Mn2_gpd_{gpd}_tdq_{tdq_g}" # TO-DO: Should change to be more descriptive
-    # AP = np.array([fdd, fpd, gpd, soc, sov]) # Fdd, Fpd, Gpd, SO-Core, SO-Valence
-    # G1 = 1.0 # Represents width of first Gaussian
-    # L1 = 1.2 # Represents width of first Lorentzian
-    # L2 = 4.0 # Represents width of second Lorentzian at splitting point
-    # NormalizationTF = True # Not sure what this means?
-    # SplitPoint = 7648.0 # Energy splitting point to determine what Lorentzian width to use
-    # SplitTF = False # Whether we should split or not 
-
-
 
     # Run rcn31 and rcn2 programs
     os.system(os.path.join(RunFileLocation,'bin','rcn31.exe'))
@@ -75,7 +67,10 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     os.system(os.path.join(RunFileLocation,'bin','rcn2.exe'))
     shutil.copyfile('ftn11','ftn10')
 
-    ### Update rcg file
+    # Run rcg program
+    # ---------------------
+
+    # Update rcg file
     crystal = crystal_bf
     f_out = open('temp.rcg','w',encoding = 'utf-8')
     f1 = open('ftn10','r')
@@ -120,7 +115,7 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     f_out.close(); f1.close(); f2.close()
     
     shutil.copyfile('temp.rcg','ftn10')
-    shutil.copyfile('ftn10',File1+'.rcg')
+    shutil.copyfile('ftn10',fname+'.rcg')
     os.system(os.path.join(RunFileLocation,'bin','rcg9.exe'))
     shutil.move('ftn14','temp.m14')
 
@@ -144,8 +139,8 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     f2.close()    
 
     os.system(os.path.join(RunFileLocation,'bin','racer.exe temp.m14 temp.ora <temp.rac'))
-    shutil.copyfile('temp.ora',File1 + '.oea')
-    shutil.copyfile('temp.rac',File1 + '.rac')
+    shutil.copyfile('temp.ora',fname+'.oea')
+    shutil.copyfile('temp.rac',fname+'.rac')
 
     # Create_nfo_file
     # fname_nfo = File1+'.nfo'
@@ -235,8 +230,11 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     for jj in dlist2:
         os.remove(jj)
     
-    # Stick Generation part   
-    files2plot = File1+'.oea'
+    # Stick Generation   
+    # ---------------------
+
+
+    files2plot = fname+'.oea'
     if not os.path.exists(files2plot):
         print('Failed to calculate XES.')
         sys.exit()
@@ -255,21 +253,21 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     bindEs = str(float(bindEs))
     # fid_NFO.close()
 
-    if SplitTF:
+    if split:
         fid1 = open(os.path.join(RunFileLocation,'Resources','template_split.plo'),'r')
     else:
         fid1 = open(os.path.join(RunFileLocation,'Resources','template.plo'),'r')
     fid2 = open('temp.plo','w',encoding = 'utf-8')
 
-    if SplitTF:
+    if split:
         dd = fid1.readline()
         fid2.write('%s' % dd[:11])
         fid2.write('%3.2f %3.2f' % (L1, fano))
-        fid2.write('%s %4.0f\n' % (' range 0', SplitPoint))
+        fid2.write('%s %4.0f\n' % (' range 0', s_pt))
         dd = fid1.readline()
         fid2.write('%s' % dd[:11])
         fid2.write('%3.2f %3.2f' % (L2, fano))
-        fid2.write('%s %4.0f %s\n' % (' range', SplitPoint,' 9999'))
+        fid2.write('%s %4.0f %s\n' % (' range', s_pt,' 9999'))
     else:
         dd = fid1.readline()
         fid2.write('%s' % dd[:11])
@@ -305,7 +303,7 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     fid1.close(); fid2.close()
 
     os.system(os.path.join(RunFileLocation,'bin','plo1.exe <temp.plo'))
-    shutil.copyfile('temp.plo', File1+'.plo')
+    shutil.copyfile('temp.plo', fname+'.plo')
         
     fexist = 'temp_left.dat'
     if not os.path.exists(fexist):
@@ -436,7 +434,8 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     bindE = float(bindEs)
     #y1 = np.flipud(y1); Was commented out originally
     x1 = -x1 +2*bindE
-    # y2 = y2/np.trapz(y2, x = x2) # normalization
+    if norm:
+        y2 = y2/np.trapz(y2, x = x2) # normalization
     x2 = -x2 +2*bindE
     y2 = np.flipud(y2); 
     x2 = np.flipud(x2); 
@@ -471,7 +470,7 @@ def gen_sticks(fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0,
     # ax.bar(x2,y2/5, color = 'maroon', width = 0.2)
     # plt.ylim(0,0.2)
     # plt.show()
-    return x2, y2
+    return x2, y2, x1, y1
 
     
     
