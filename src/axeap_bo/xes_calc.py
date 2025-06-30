@@ -1,6 +1,6 @@
+from . import cowan_config
 import os
 import numpy as np
-import cowan_config
 import shutil
 from datetime import datetime
 import glob
