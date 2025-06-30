@@ -1,6 +1,6 @@
 [project]
 name = "axeap-bo"
-version = "0.1.1"
+version = "0.1.2"
 description = "KB XES analysis using Bayesian Optimization"
 authors = [
     {name = "apsranjan",email = "ranjan@anl.gov"}
