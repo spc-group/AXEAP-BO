@@ -41,8 +41,7 @@ def gen_sticks(el, ox, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, td
         em_start = np.round(bindE-50, decimals=-1)
     if not em_end:
         em_end = np.round(bindE+50, decimals=-1)
-    if L2:
-        split = True
+    split = True if L2 else False
     
     # Calculate crystal field parameters
     # Indices: Dq_g = 0, Dt_g = 1, Ds_g = 2, Dq_e = 3, Dt_e = 4, Ds_e = 5, spin_g = 6, spin_e = 7
