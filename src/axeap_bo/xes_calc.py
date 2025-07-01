@@ -5,7 +5,6 @@ import shutil
 from datetime import datetime
 import glob
 import sys
-import matplotlib.pyplot as plt
 import pandas as pd
 
 # Function to generate sticks 
