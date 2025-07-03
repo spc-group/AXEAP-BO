@@ -10,7 +10,7 @@ def convL(x, x1, fv, dE):
     return fv/(2*np.pi*(np.square(fv/2)+np.square(x-x1+dE)))
 
 # Function to generate psuedo voigt spectra from stick data
-def pvoigt_gen(x, G1, L1, L2, dE, dI, SP, stick_x, stick_y):
+def pvoigt_gen(x, stick_x, stick_y, G1=1.0, L1=1.2, L2=4.0, dE=0.0, dI=1.0, SP=6489.0):
     # Define FWHM of Voigt function before and after splitting point
     fv1 = 0.5346*2*L1 + 2*np.sqrt(0.2166*L1**2+G1**2)
     fv2 = 0.5346*2*L2 + 2*np.sqrt(0.2166*L2**2+G1**2)
@@ -36,7 +36,7 @@ def pvoigt_gen(x, G1, L1, L2, dE, dI, SP, stick_x, stick_y):
     return y
 
 # Function to fit convolution to stick spectra based on experimental spectra using fixed splitting point
-def min_fit(stick_x, stick_y, exp_x, exp_y):
+def min_fit(exp_x, exp_y, stick_x, stick_y):
 
     # Variables are G1, L1, L2, dE, dI, SP
     bounds = ((0.5,2), (0.5,4), (1,10), (-10,10), (0.01, 2), (6480,6500))
@@ -46,7 +46,7 @@ def min_fit(stick_x, stick_y, exp_x, exp_y):
     # Function to generate spectrum from stick data
     def rmse(x):
         # Generate spectra
-        y = pvoigt_gen(exp_x, *x, stick_x, stick_y)
+        y = pvoigt_gen(exp_x, stick_x, stick_y, *x)
 
         # Return loss
         err = np.linalg.norm(y-exp_y)

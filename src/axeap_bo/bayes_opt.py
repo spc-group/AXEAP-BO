@@ -20,9 +20,9 @@ def simul_opt(el, ox, exp_x, exp_y, varis, bounds, n_calls=50, n_initial_points=
             vals_i[int(idx)] = x[i]
         
         stick_x, stick_y = xes_calc.gen_sticks(el, ox, *vals)
-        res = xes_fit.min_fit(stick_x, stick_y, exp_x, exp_y)
+        res = xes_fit.min_fit(exp_x, exp_y, stick_x, stick_y)
         
-        spec = xes_fit.pvoigt_gen(exp_x, *res.x, stick_x, stick_y)
+        spec = xes_fit.pvoigt_gen(exp_x, stick_x, stick_y, *res.x)
         err = np.linalg.norm(spec-exp_y)
         print(vals_i)
         print(err)
