@@ -40,6 +40,8 @@ def gen_sticks(el, ox, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, td
         em_start = np.round(bindE-50, decimals=-1)
     if not em_end:
         em_end = np.round(bindE+50, decimals=-1)
+    if not s_pt:
+        s_pt = bindE-3
     split = True if L2 else False
     
     # Calculate crystal field parameters
@@ -430,14 +432,13 @@ def gen_sticks(el, ox, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, td
 
 
     bindE = float(bindEs)
-    #y1 = np.flipud(y1); Was commented out originally
+    y1 = np.flipud(y1); # Was commented out originally
     x1 = -x1 +2*bindE
     if norm:
-        y2 = y2/np.trapz(y2, x = x2) # normalization
+            y2 = y2/np.sum(y2) # normalization
     x2 = -x2 +2*bindE
     y2 = np.flipud(y2); 
     x2 = np.flipud(x2); 
-    y2 = y2/np.sum(y2)
 
     dlist = glob.glob('temp*')
     for jj in dlist:
@@ -468,7 +469,7 @@ def gen_sticks(el, ox, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, td
     # ax.bar(x2,y2/5, color = 'maroon', width = 0.2)
     # plt.ylim(0,0.2)
     # plt.show()
-    return x2, y2, x1, y1
+    return x2, y2
 
     
     

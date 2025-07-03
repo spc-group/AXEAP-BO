@@ -1,5 +1,5 @@
 import numpy as np
-from scipy import minimize
+from scipy.optimize import minimize
 
 # Function to generate Lorentzian convolution
 def convG(x, x1, fv, dE):
