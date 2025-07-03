@@ -36,33 +36,22 @@ def pvoigt_gen(x, G1, L1, L2, dE, dI, SP, stick_x, stick_y):
     return y
 
 # Function to fit convolution to stick spectra based on experimental spectra using fixed splitting point
-def nls_fit_spc_exp(stick_x, stick_y, exp_x, exp_y, sp):
+def min_fit(stick_x, stick_y, exp_x, exp_y):
 
-    # bounds = ([0.5, 0.5, 1, -10, 0.01, 6480], [2, 4, 10, 10, 2.0, 6500])
-    # bounds = ((0.5,2), (0.5,4), (1,10), (-10,10), (0.01, 2), (6480,6500))
-    bounds = ((0.5, 2), (0.5,4), (1,10), (-10,10), (0.01, 2))
+    # Variables are G1, L1, L2, dE, dI, SP
+    bounds = ((0.5,2), (0.5,4), (1,10), (-10,10), (0.01, 2), (6480,6500))
+    # bounds = ((0.5, 2), (0.5,4), (1,10), (-10,10), (0.01, 2))
+    ini_x = np.array([0.5, 1.46, 2.02, 4.29, 1, 6489.0])
     
     # Function to generate spectrum from stick data
-    def func(x):
+    def rmse(x):
         # Generate spectra
-        y = pvoigt_gen(exp_x, *x, sp, stick_x, stick_y)
+        y = pvoigt_gen(exp_x, *x, stick_x, stick_y)
 
         # Return loss
         err = np.linalg.norm(y-exp_y)
         # print(err)
         return err
     
-
-    # err = func(x, 0.5, 1.2, 4.0, -4.5, 0.1, 6489)
-    # print(err)
-    ini_x = np.array([0.5, 1.46, 2.02, 4.29, 1])
-    # mat_x = np.array([0.5, 1.49, 4.84, 3.67, 0.878])
-    # res = minimize(func, ini_x, bounds=bounds)
-    res = minimize(func, ini_x, bounds=bounds)
-    
-    
-    err = func(res.x)
-    # mat_err = func(mat_x)
-    # print(f"Final Error: {err}")
-    # print(f"Matlab Error: {mat_err}")
+    res = minimize(rmse, ini_x, bounds=bounds)
     return res

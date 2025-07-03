@@ -20,7 +20,7 @@ def simul_opt(vars, bounds, el, ox, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, 
             print(x)
             vals[int(idx)] = x[i]
         
-        stick_x, stick_y, spec_x, spec_y, = simul_opt(el, ox, *vals)
+        stick_x, stick_y = xes_calc.gen_sticks(el, ox, *vals)
         return 0.5
     
     res = gp_minimize(var_bo, bounds, n_calls=10)
