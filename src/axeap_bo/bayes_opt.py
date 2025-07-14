@@ -4,10 +4,18 @@ from skopt import gp_minimize
 
 var_names = ["fdd", "fpd", "gpd", "soc", "sov", "tdq_g", "tdq_e", "dt_g", "dt_e", "ds_g", "ds_e", "m_g", "m_e"]
 
-def simul_opt(el, ox, exp_x, exp_y, varis, bounds, n_calls=50, n_initial_points=1, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0, tdq_e=0.0, 
+def simul_opt(el, ox, exp_x, exp_y, varis, n_calls=50, n_initial_points=1, uq=False, samples=None, fdd=100.0, fpd=100.0, gpd=100.0, soc=100.0, sov=100.0, tdq_g=0.0, tdq_e=0.0, 
               dt_g=0.0, dt_e=0.0, ds_g=0.0, ds_e=0.0, m_g=0.0, m_e=0.0, em_start=None, em_end=None, G1=1.0, L1=1.2, L2=None, s_pt=None, norm=False):
-    var_idxs = np.zeros((len(varis)))
-    for i, var in enumerate(varis):
+    
+    bounds = []
+    var_ns = []
+    for var in varis: 
+        var_n, low_b, up_b = var
+        var_ns.append(var_n)
+        bounds.append([low_b, up_b])
+
+    var_idxs = np.zeros((len(var_ns)))
+    for i, var in enumerate(var_ns):
         var_idxs[i] = var_names.index(var)
     print(var_idxs)
 
@@ -28,6 +36,12 @@ def simul_opt(el, ox, exp_x, exp_y, varis, bounds, n_calls=50, n_initial_points=
         print(err)
         return err
     
+    if uq: 
+        results = []
+        for i in range(samples):
+            res = gp_minimize(var_bo, bounds, n_calls=n_calls, n_initial_points=n_initial_points)
+            results.append(res)
+        return res
     res = gp_minimize(var_bo, bounds, n_calls=n_calls, n_initial_points=n_initial_points)
     print(res)
     return res
@@ -53,5 +67,3 @@ def seq_opt(el, ox, exp_x, exp_y, vars_seq, bounds_seq, calls_seq, n_loops=10, f
             for i, idx in enumerate(var_idxs):
                 vals[int(idx)] = res.x[i]
             print(vals)
-
-            

@@ -12,14 +12,12 @@ def test_ti_default():
     assert np.array_equal(stick_x, mstick_x)
     assert np.array_equal(stick_y, mstick_y)
 
-# Test default spectral calculation for Cu3+
+# Test default spectral calculation for Cu3+ (change ion)
 
-# Test custom multiplet calculations for Ti1+
+# Test custom multiplet calculations for Ti1+ (change multiplet parameters)
 
-# Test custom crystal field calculations for Ti1+
+# Test custom crystal field calculations for Ti1+ (change crystal field parameters)
 
-# Test custom energy range calculations for Ti1+
+# Test custom energy range calculations for Ti1+ (change energy range)
 
-# Test 
-
-# Test 
+# Test normalized energy range calculations for Ti1+ (change normalization)
