@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-AXEAP-BO documentation
+AXEAP-BO Documentation
 ======================
 
 Add your content using ``reStructuredText`` syntax. See the
@@ -16,4 +16,4 @@ documentation for details.
    :caption: Contents:
 
    tutorials/index.rst
-
+   topic_guides/index.rst
